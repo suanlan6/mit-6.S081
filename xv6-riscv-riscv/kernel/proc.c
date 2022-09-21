@@ -322,6 +322,11 @@ fork(void)
   np->state = RUNNABLE;
   release(&np->lock);
 
+  // copy mask to child process
+  acquire(&np->lock);
+  np->mask = p->mask;
+  release(&np->lock);
+
   return pid;
 }
 
@@ -680,4 +685,15 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+uint64
+procunused() {
+  uint64 sum = 0;
+  struct proc* p;
+  for (p = proc; p < &proc[NPROC]; ++p) {
+    if (p->state != UNUSED)
+      ++sum;
+  }
+  return sum;
 }
